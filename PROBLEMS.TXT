@@ -1,0 +1,41 @@
+[{
+	"resource": "/C:/FIKKAN/project/Skills/NutriMove/nutrimove/lib/features/scanner/data/services/tflite_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_local_variable",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_local_variable",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the local variable 'sourceDb' isn't used.\nTry removing the variable or using it.",
+	"source": "dart",
+	"startLineNumber": 166,
+	"startColumn": 11,
+	"endLineNumber": 166,
+	"endColumn": 19,
+	"origin": "extHost1"
+},{
+	"resource": "/C:/FIKKAN/project/Skills/NutriMove/nutrimove/lib/features/scanner/data/services/tflite_service.dart",
+	"owner": "_generated_diagnostic_collection_name_#2",
+	"code": {
+		"value": "unused_local_variable",
+		"target": {
+			"$mid": 1,
+			"path": "/diagnostics/unused_local_variable",
+			"scheme": "https",
+			"authority": "dart.dev"
+		}
+	},
+	"severity": 4,
+	"message": "The value of the local variable 'sourceDb' isn't used.\nTry removing the variable or using it.",
+	"source": "dart",
+	"startLineNumber": 447,
+	"startColumn": 11,
+	"endLineNumber": 447,
+	"endColumn": 19,
+	"origin": "extHost1"
+}]

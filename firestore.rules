@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ─── Users Collection ──────────────────────────
+    // Only the authenticated owner can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Sub-collections inherit owner-only access
+      match /daily_logs/{logId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+        
+        match /meals/{mealId} {
+          allow read, write: if request.auth != null && request.auth.uid == userId;
+        }
+      }
+      
+      match /streaks/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /achievements/{achievementId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      match /chat_history/{messageId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+    
+    // ─── Food Database (Read-Only) ─────────────────
+    // Authenticated users can read; only admin via Console can write
+    match /food_database/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+    
+    // ─── Default: Deny All ─────────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
