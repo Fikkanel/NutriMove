@@ -36,8 +36,30 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isLoading = context.watch<RecommendationProvider>().isLoading;
+    final isProfileLoading = context.watch<ProfileProvider>().isLoading;
+    final showRefresh = !isLoading && !isProfileLoading;
+
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Rekomendasi Menu', showBack: true),
+      appBar: CustomAppBar(
+        title: 'Rekomendasi Menu',
+        showBack: true,
+        actions: [
+          if (showRefresh)
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: AppColors.primary),
+              tooltip: 'Muat ulang rekomendasi',
+              onPressed: () {
+                final profile = context.read<ProfileProvider>();
+                context.read<RecommendationProvider>().loadRecommendations(
+                  profile.dietGoal,
+                  allergens: profile.allergens,
+                );
+              },
+            ),
+          const SizedBox(width: 8),
+        ],
+      ),
       body: Container(
         decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: Consumer2<ProfileProvider, RecommendationProvider>(

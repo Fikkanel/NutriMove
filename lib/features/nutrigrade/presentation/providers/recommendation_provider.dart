@@ -199,149 +199,120 @@ class RecommendationProvider extends ChangeNotifier {
 
     final cleanGoal = goal.isEmpty ? 'maintain' : goal;
 
-    // Jika API Key tidak disetel, gunakan fallback daftar makanan lokal sehat terjangkau secara offline
+    // Jika API Key tidak disetel atau mock, gunakan daftar fallback lokal secara offline
     if (EnvConfig.geminiApiKey.isEmpty || EnvConfig.geminiApiKey.startsWith('AQ.')) {
-      final list = _fallbacks[cleanGoal] ?? _fallbacks['maintain']!;
-      if (allergens.isNotEmpty) {
-        _recommendations = list.where((item) {
-          final name = item['name'].toString().toLowerCase();
-          final detail = item['detail'].toString().toLowerCase();
-          final desc = item['desc'].toString().toLowerCase();
-          for (final allergen in allergens) {
-            final cleanAllergen = allergen.toLowerCase().trim();
-            if (cleanAllergen.isNotEmpty &&
-                (name.contains(cleanAllergen) ||
-                 detail.contains(cleanAllergen) ||
-                 desc.contains(cleanAllergen))) {
-              return false;
-            }
-          }
-          return true;
-        }).toList();
-        
-        // Jika semua menu dalam daftar terfilter karena alergi, gunakan menu dasar yang 100% aman
-        if (_recommendations.isEmpty) {
-          _recommendations = [
-            {
-              'name': 'Nasi Putih & Tahu Tempe Kukus',
-              'cal': 250,
-              'grade': 'A',
-              'desc': 'Sangat aman dan bebas dari alergen.',
-              'detail': 'Nasi putih hangat dipadukan dengan tahu dan tempe kukus segar serta lalapan ketimun. Bebas dari alergen utama seperti seafood, susu, telur, ayam, pisang, gandum, atau kacang-kacangan.'
-            }
-          ];
-        }
-      } else {
-        _recommendations = list;
-      }
-      _isLoading = false;
-      notifyListeners();
-      return;
-    }
-
-    final allergyPrompt = allergens.isNotEmpty
-        ? "PENTING: Pengguna memiliki ALERGI terhadap bahan-bahan berikut: ${allergens.join(', ')}. JANGAN merekomendasikan makanan yang mengandung salah satu dari bahan-bahan tersebut! "
-        : "";
-
-    final localFoodConstraint = "REKOMENDASIKAN HANYA makanan lokal Indonesia yang murah, terjangkau, sehat, dan mudah ditemui sehari-hari (contoh: Tempe, Tahu, Sayur Asem, Pecel, Gado-Gado, Capcay Sayur, Telur Rebus, Pepes Ikan Kembung, Soto, dll). "
-        "SANGAT DILARANG merekomendasikan makanan mahal, kebarat-baratan, atau bahan impor mewah seperti Salmon, Buah Beri, Quinoa, Almond, Roti Gandum, dll. Utamakan bahan lokal hemat biaya.";
-
-    String goalPrompt = '';
-    if (cleanGoal == 'lose') {
-      goalPrompt = "Berikan 4 menu lokal sehat terjangkau untuk menurunkan berat badan (lose weight/diet).";
-    } else if (cleanGoal == 'gain') {
-      goalPrompt = "Berikan 4 menu lokal sehat terjangkau padat kalori untuk menaikkan berat badan (gain weight/bulking).";
-    } else {
-      goalPrompt = "Berikan 4 menu lokal sehat terjangkau gizi seimbang untuk menjaga berat badan (maintain weight).";
-    }
-
-    try {
-      final model = GenerativeModel(
-        model: 'gemini-2.5-flash',
-        apiKey: EnvConfig.geminiApiKey,
-        systemInstruction: Content.system(
-          "Kamu adalah ahli gizi dari NutriMove. Tugasmu adalah memberikan rekomendasi menu makanan sehat berdasarkan target diet user. "
-          "Target diet user adalah: 'lose' (turunkan berat badan), 'maintain' (jaga berat badan), atau 'gain' (naikkan berat badan). "
-          "$allergyPrompt"
-          "$localFoodConstraint"
-          "Berikan 4 rekomendasi makanan dalam format JSON array. Setiap objek memiliki key: \n"
-          "- 'name' (string nama makanan lokal Indonesia)\n"
-          "- 'cal' (integer estimasi kalori per porsi)\n"
-          "- 'grade' (string grade gizi A/B/C/D)\n"
-          "- 'desc' (string deskripsi singkat alasan makanan ini cocok untuk target diet tersebut, maks 8 kata)\n"
-          "- 'detail' (string penjelasan lengkap & analisis nutrisi detail mengapa makanan ini direkomendasikan untuk target diet tersebut, minimal 30 kata)\n"
-          "Berikan respon berupa JSON mentah HANYA dalam format array, tanpa block markdown (seperti ```json) atau teks pengantar lainnya."
-        ),
+      _recommendations = List<Map<String, dynamic>>.from(
+        _fallbacks[cleanGoal] ?? _fallbacks['maintain']!,
       );
+    } else {
+      final allergyPrompt = allergens.isNotEmpty
+          ? "PENTING: Pengguna memiliki ALERGI terhadap bahan-bahan berikut: ${allergens.join(', ')}. JANGAN merekomendasikan makanan yang mengandung salah satu dari bahan-bahan tersebut! "
+          : "";
 
-      final response = await model.generateContent([
-        Content.text(goalPrompt)
-      ]).timeout(const Duration(seconds: 7));
+      final localFoodConstraint = "REKOMENDASIKAN HANYA makanan lokal Indonesia yang murah, terjangkau, sehat, dan mudah ditemui sehari-hari (contoh: Tempe, Tahu, Sayur Asem, Pecel, Gado-Gado, Capcay Sayur, Telur Rebus, Pepes Ikan Kembung, Soto, dll). "
+          "SANGAT DILARANG merekomendasikan makanan mahal, kebarat-baratan, atau bahan impor mewah seperti Salmon, Buah Beri, Quinoa, Almond, Roti Gandum, dll. Utamakan bahan lokal hemat biaya.";
 
-      String responseText = response.text?.trim() ?? '';
-      if (responseText.startsWith('```')) {
-        responseText = responseText
-            .replaceAll(RegExp(r'^```\w*\n?'), '')
-            .replaceAll(RegExp(r'\n?```$'), '')
-            .trim();
+      String goalPrompt = '';
+      if (cleanGoal == 'lose') {
+        goalPrompt = "Berikan 6 menu lokal sehat terjangkau untuk menurunkan berat badan (lose weight/diet).";
+      } else if (cleanGoal == 'gain') {
+        goalPrompt = "Berikan 6 menu lokal sehat terjangkau padat kalori untuk menaikkan berat badan (gain weight/bulking).";
+      } else {
+        goalPrompt = "Berikan 6 menu lokal sehat terjangkau gizi seimbang untuk menjaga berat badan (maintain weight).";
       }
-
-      final List<dynamic> parsed = jsonDecode(responseText) as List<dynamic>;
-      _recommendations = parsed.map((item) {
-        final map = item as Map<String, dynamic>;
-        return {
-          'name': map['name'] ?? 'Menu Sehat',
-          'cal': (map['cal'] ?? 300) as int,
-          'grade': map['grade']?.toString().toUpperCase() ?? 'A',
-          'desc': map['desc'] ?? 'Menu sehat dengan kandungan gizi seimbang',
-          'detail': map['detail'] ?? map['desc'] ?? 'Penjelasan gizi lengkap untuk mendukung diet sehat Anda.',
-        };
-      }).toList();
-    } catch (e) {
-      debugPrint('Gemini recommendations error: $e. Falling back to Groq.');
-      
-      final systemPrompt = "Kamu adalah ahli gizi dari NutriMove. Tugasmu adalah memberikan rekomendasi menu makanan sehat berdasarkan target diet user. "
-          "Target diet user adalah: 'lose' (turunkan berat badan), 'maintain' (jaga berat badan), 'gain' (naikkan berat badan). "
-          "$allergyPrompt"
-          "$localFoodConstraint"
-          "Berikan 4 rekomendasi makanan dalam format JSON array. Setiap objek memiliki key: \n"
-          "- 'name' (string nama makanan Indonesia)\n"
-          "- 'cal' (integer estimasi kalori per porsi)\n"
-          "- 'grade' (string grade gizi A/B/C/D)\n"
-          "- 'desc' (string deskripsi singkat alasan makanan ini cocok untuk target diet tersebut, maks 8 kata)\n"
-          "- 'detail' (string penjelasan lengkap & analisis nutrisi detail mengapa makanan ini direkomendasikan untuk target diet tersebut, minimal 30 kata)\n"
-          "Berikan respon berupa JSON mentah HANYA dalam format array, tanpa block markdown (seperti ```json) atau teks pengantar lainnya.";
 
       try {
-        final groqResponse = await GroqService.chat(
-          goalPrompt,
-          systemInstruction: systemPrompt,
+        final model = GenerativeModel(
+          model: 'gemini-2.5-flash',
+          apiKey: EnvConfig.geminiApiKey,
+          systemInstruction: Content.system(
+            "Kamu adalah ahli gizi dari NutriMove. Tugasmu adalah memberikan rekomendasi menu makanan sehat berdasarkan target diet user. "
+            "Target diet user adalah: 'lose' (turunkan berat badan), 'maintain' (jaga berat badan), atau 'gain' (naikkan berat badan). "
+            "$allergyPrompt"
+            "$localFoodConstraint"
+            "Berikan 6 rekomendasi makanan dalam format JSON array. Setiap objek memiliki key: \n"
+            "- 'name' (string nama makanan lokal Indonesia)\n"
+            "- 'cal' (integer estimasi kalori per porsi)\n"
+            "- 'grade' (string grade gizi A/B/C/D)\n"
+            "- 'desc' (string deskripsi singkat alasan makanan ini cocok untuk target diet tersebut, maks 8 kata)\n"
+            "- 'detail' (string penjelasan lengkap & analisis nutrisi detail mengapa makanan ini direkomendasikan untuk target diet tersebut, minimal 30 kata)\n"
+            "Berikan respon berupa JSON mentah HANYA dalam format array, tanpa block markdown (seperti ```json) atau teks pengantar lainnya."
+          ),
         );
 
-        if (groqResponse != null) {
-          String responseText = groqResponse.trim();
-          if (responseText.startsWith('```')) {
-            responseText = responseText
-                .replaceAll(RegExp(r'^```\w*\n?'), '')
-                .replaceAll(RegExp(r'\n?```$'), '')
-                .trim();
-          }
-          final List<dynamic> parsed = jsonDecode(responseText) as List<dynamic>;
-          _recommendations = parsed.map((item) {
-            final map = item as Map<String, dynamic>;
-            return {
-              'name': map['name'] ?? 'Menu Sehat',
-              'cal': (map['cal'] ?? 300) as int,
-              'grade': map['grade']?.toString().toUpperCase() ?? 'A',
-              'desc': map['desc'] ?? 'Menu sehat dengan kandungan gizi seimbang',
-              'detail': map['detail'] ?? map['desc'] ?? 'Penjelasan gizi lengkap untuk mendukung diet sehat Anda.',
-            };
-          }).toList();
-        } else {
-          _recommendations = _fallbacks[cleanGoal] ?? _fallbacks['maintain']!;
+        final response = await model.generateContent([
+          Content.text(goalPrompt)
+        ]).timeout(const Duration(seconds: 7));
+
+        String responseText = response.text?.trim() ?? '';
+        if (responseText.startsWith('```')) {
+          responseText = responseText
+              .replaceAll(RegExp(r'^```\w*\n?'), '')
+              .replaceAll(RegExp(r'\n?```$'), '')
+              .trim();
         }
-      } catch (_) {
-        _recommendations = _fallbacks[cleanGoal] ?? _fallbacks['maintain']!;
+
+        final List<dynamic> parsed = jsonDecode(responseText) as List<dynamic>;
+        _recommendations = parsed.map((item) {
+          final map = item as Map<String, dynamic>;
+          return {
+            'name': map['name'] ?? 'Menu Sehat',
+            'cal': (map['cal'] ?? 300) as int,
+            'grade': map['grade']?.toString().toUpperCase() ?? 'A',
+            'desc': map['desc'] ?? 'Menu sehat dengan kandungan gizi seimbang',
+            'detail': map['detail'] ?? map['desc'] ?? 'Penjelasan gizi lengkap untuk mendukung diet sehat Anda.',
+          };
+        }).toList();
+      } catch (e) {
+        debugPrint('Gemini recommendations error: $e. Falling back to Groq.');
+        
+        final systemPrompt = "Kamu adalah ahli gizi dari NutriMove. Tugasmu adalah memberikan rekomendasi menu makanan sehat berdasarkan target diet user. "
+            "Target diet user adalah: 'lose' (turunkan berat badan), 'maintain' (jaga berat badan), 'gain' (naikkan berat badan). "
+            "$allergyPrompt"
+            "$localFoodConstraint"
+            "Berikan 6 rekomendasi makanan dalam format JSON array. Setiap objek memiliki key: \n"
+            "- 'name' (string nama makanan Indonesia)\n"
+            "- 'cal' (integer estimasi kalori per porsi)\n"
+            "- 'grade' (string grade gizi A/B/C/D)\n"
+            "- 'desc' (string deskripsi singkat alasan makanan ini cocok untuk target diet tersebut, maks 8 kata)\n"
+            "- 'detail' (string penjelasan lengkap & analisis nutrisi detail mengapa makanan ini direkomendasikan untuk target diet tersebut, minimal 30 kata)\n"
+            "Berikan respon berupa JSON mentah HANYA dalam format array, tanpa block markdown (seperti ```json) atau teks pengantar lainnya.";
+
+        try {
+          final groqResponse = await GroqService.chat(
+            goalPrompt,
+            systemInstruction: systemPrompt,
+          );
+
+          if (groqResponse != null) {
+            String responseText = groqResponse.trim();
+            if (responseText.startsWith('```')) {
+              responseText = responseText
+                  .replaceAll(RegExp(r'^```\w*\n?'), '')
+                  .replaceAll(RegExp(r'\n?```$'), '')
+                  .trim();
+            }
+            final List<dynamic> parsed = jsonDecode(responseText) as List<dynamic>;
+            _recommendations = parsed.map((item) {
+              final map = item as Map<String, dynamic>;
+              return {
+                'name': map['name'] ?? 'Menu Sehat',
+                'cal': (map['cal'] ?? 300) as int,
+                'grade': map['grade']?.toString().toUpperCase() ?? 'A',
+                'desc': map['desc'] ?? 'Menu sehat dengan kandungan gizi seimbang',
+                'detail': map['detail'] ?? map['desc'] ?? 'Penjelasan gizi lengkap untuk mendukung diet sehat Anda.',
+              };
+            }).toList();
+          } else {
+            _recommendations = List<Map<String, dynamic>>.from(
+              _fallbacks[cleanGoal] ?? _fallbacks['maintain']!,
+            );
+          }
+        } catch (_) {
+          _recommendations = List<Map<String, dynamic>>.from(
+            _fallbacks[cleanGoal] ?? _fallbacks['maintain']!,
+          );
+        }
       }
     }
 
@@ -364,19 +335,90 @@ class RecommendationProvider extends ChangeNotifier {
         return true;
       }).toList();
       
-      if (filtered.isNotEmpty) {
-        _recommendations = filtered;
-      } else {
-        // Jika semua menu hasil AI terfilter karena alergi, tampilkan menu dasar 100% aman
-        _recommendations = [
+      _recommendations = filtered;
+    }
+
+    // Pastikan selalu menampilkan rekomendasi lebih dari 4 (yaitu minimal 5 item)
+    if (_recommendations.length < 5) {
+      final list = _fallbacks[cleanGoal] ?? _fallbacks['maintain']!;
+      for (final item in list) {
+        if (_recommendations.length >= 5) break;
+        final alreadyExists = _recommendations.any((rec) =>
+            rec['name'].toString().toLowerCase() ==
+            item['name'].toString().toLowerCase());
+        if (alreadyExists) continue;
+
+        bool isSafe = true;
+        if (allergens.isNotEmpty) {
+          final name = item['name'].toString().toLowerCase();
+          final detail = item['detail'].toString().toLowerCase();
+          final desc = item['desc'].toString().toLowerCase();
+          for (final allergen in allergens) {
+            final cleanAllergen = allergen.toLowerCase().trim();
+            if (cleanAllergen.isNotEmpty &&
+                (name.contains(cleanAllergen) ||
+                 detail.contains(cleanAllergen) ||
+                 desc.contains(cleanAllergen))) {
+              isSafe = false;
+              break;
+            }
+          }
+        }
+
+        if (isSafe) {
+          _recommendations.add(item);
+        }
+      }
+
+      // Jika masih kurang dari 5 karena semua fallback juga terfilter alergi, gunakan menu dasar yang 100% aman
+      if (_recommendations.length < 5) {
+        final safeBaseOptions = [
           {
             'name': 'Nasi Putih & Tahu Tempe Kukus',
             'cal': 250,
             'grade': 'A',
             'desc': 'Sangat aman dan bebas dari alergen.',
-            'detail': 'Nasi putih hangat dipadukan dengan tahu dan tempe kukus segar serta lalapan ketimun. Bebas dari alergen utama seperti seafood, susu, telur, ayam, pisang, gandum, atau kacang-kacangan.'
+            'detail': 'Nasi putih hangat dipadukan dengan tahu dan tempe kukus segar serta lalapan ketimun. Bebas dari alergen utama.'
+          },
+          {
+            'name': 'Bubur Sumsum Polos',
+            'cal': 180,
+            'grade': 'B',
+            'desc': 'Karbohidrat lembut bebas gluten & laktosa.',
+            'detail': 'Bubur tepung beras tradisional dengan siraman sedikit kuah gula jawa encer. Sangat aman bagi pencernaan sensitif dan bebas alergen.'
+          },
+          {
+            'name': 'Kentang Kukus & Sayur Rebus',
+            'cal': 160,
+            'grade': 'A',
+            'desc': 'Energi karbohidrat kentang bebas kacang/telur.',
+            'detail': 'Kentang lokal dikukus empuk disajikan bersama wortel dan buncis rebus. Bebas dari kacang-kacangan, telur, susu, maupun seafood.'
+          },
+          {
+            'name': 'Singkong Rebus Gurih',
+            'cal': 200,
+            'grade': 'B',
+            'desc': 'Sumber energi karbohidrat kompleks alami.',
+            'detail': 'Singkong rebus empuk dengan sedikit garam. Bebas dari bahan pengawet dan 100% bebas dari segala jenis allergen.'
+          },
+          {
+            'name': 'Ubi Jalar Kukus Manis',
+            'cal': 170,
+            'grade': 'A',
+            'desc': 'Kaya serat pangan dan vitamin A alami.',
+            'detail': 'Ubi jalar merah dikukus hingga empuk dan manis. Pilihan sarapan atau camilan sehat yang bebas dari susu, kacang, maupun seafood.'
           }
         ];
+
+        for (final item in safeBaseOptions) {
+          if (_recommendations.length >= 5) break;
+          final alreadyExists = _recommendations.any((rec) =>
+              rec['name'].toString().toLowerCase() ==
+              item['name'].toString().toLowerCase());
+          if (!alreadyExists) {
+            _recommendations.add(item);
+          }
+        }
       }
     }
 
