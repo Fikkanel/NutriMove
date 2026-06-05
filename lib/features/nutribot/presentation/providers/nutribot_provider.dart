@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/services/groq_service.dart';
 
 /// Manages NutriBot chat state.
 class NutribotProvider extends ChangeNotifier {
@@ -24,7 +25,7 @@ class NutribotProvider extends ChangeNotifier {
     try {
       if (EnvConfig.geminiApiKey.isEmpty) throw Exception("API Key missing");
       final model = GenerativeModel(
-        model: 'gemini-3.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: EnvConfig.geminiApiKey,
         systemInstruction: Content.system("Anda adalah NutriBot, ahli gizi virtual. Berikan jawaban ringkas, informatif, dan ramah dalam bahasa Indonesia terkait nutrisi dan kesehatan.")
       );
@@ -35,11 +36,25 @@ class NutribotProvider extends ChangeNotifier {
         'timestamp': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      _messages.add({
-        'text': 'Maaf, terjadi kesalahan. Silakan coba lagi. ($e)',
-        'isUser': false,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      debugPrint('Gemini Chat error: $e. Falling back to Groq.');
+      final groqResponse = await GroqService.chat(
+        text,
+        systemInstruction: "Anda adalah NutriBot, ahli gizi virtual. Berikan jawaban ringkas, informatif, dan ramah dalam bahasa Indonesia terkait nutrisi dan kesehatan.",
+      );
+      
+      if (groqResponse != null) {
+        _messages.add({
+          'text': groqResponse,
+          'isUser': false,
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+      } else {
+        _messages.add({
+          'text': 'Maaf, terjadi kesalahan. Silakan coba lagi. ($e)',
+          'isUser': false,
+          'timestamp': DateTime.now().toIso8601String(),
+        });
+      }
     }
 
     _isLoading = false;

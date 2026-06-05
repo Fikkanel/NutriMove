@@ -21,7 +21,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Consumer<ProfileProvider>(
             builder: (_, p, _) => SingleChildScrollView(

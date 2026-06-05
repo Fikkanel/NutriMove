@@ -1,16 +1,18 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:ui' as ui;
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:flutter/foundation.dart';
 import '../../../../core/config/env_config.dart';
+import '../../../../core/services/groq_service.dart';
 
-/// Scanner AI Service: Local Lookup (Offline Mock) + Gemini (Online Fallback)
+// Layanan Deteksi Makanan AI: Pencarian Lokal (Offline) + Gemini (Online Fallback)
 class FoodRecognitionService {
   bool lastScanQuotaExceeded = false;
 
   bool get isLoaded => true;
 
-  // Local nutrition database for offline / quota fallback
+  // Database gizi lokal offline untuk fallback pencarian offline / kuota habis
   static const Map<String, Map<String, int>> _localNutritionDb = {
     'ayam goreng': {'calories': 246, 'protein': 25, 'carbs': 0, 'fat': 12},
     'ayam goreng renyah': {'calories': 290, 'protein': 22, 'carbs': 8, 'fat': 16},
@@ -48,16 +50,15 @@ class FoodRecognitionService {
     'telur rebus': {'calories': 155, 'protein': 13, 'carbs': 1, 'fat': 11},
     'telur mata sapi': {'calories': 196, 'protein': 14, 'carbs': 1, 'fat': 15},
     'sate': {'calories': 150, 'protein': 18, 'carbs': 5, 'fat': 7},
-    'unknown food': {'calories': 180, 'protein': 8, 'carbs': 22, 'fat': 6},
-    'makanan lokal': {'calories': 220, 'protein': 10, 'carbs': 25, 'fat': 8},
   };
 
   FoodRecognitionService();
 
   Future<void> loadModel() async {
-    // No-op since TFLite is removed
+    // Kosong karena model TFLite lokal dinonaktifkan
   }
 
+  // Mengklasifikasi makanan dari gambar. Berfungsi secara Hybrid (Offline Database Lookup + Online Gemini Fallback)
   Future<List<Map<String, dynamic>>> classify(String imagePath) async {
     lastScanQuotaExceeded = false;
 
@@ -121,55 +122,162 @@ class FoodRecognitionService {
     return _classifyWithGemini(imagePath);
   }
 
-  /// Fallback: Use Gemini Vision to classify food from image
+  /// Use Gemini Vision (gemini-2.5-flash) to classify food from image
+  // Mengirim gambar hasil jepretan kamera ke Gemini Vision API untuk analisis bahan makanan dan estimasi kalori/makro
   Future<List<Map<String, dynamic>>> _classifyWithGemini(String imagePath) async {
     if (EnvConfig.geminiApiKey.isEmpty) {
       lastScanQuotaExceeded = true;
-      return [{'label': 'Makanan Lokal', 'confidence': 0.5, 'isQuotaExceeded': true}];
+      return [{'label': 'BUKAN_MAKANAN', 'confidence': 0.0, 'isQuotaExceeded': true}];
     }
+
+    final imageBytes = File(imagePath).readAsBytesSync();
+    Uint8List finalBytes = imageBytes;
 
     try {
       final model = GenerativeModel(
-        model: 'gemini-3.5-flash',
+        model: 'gemini-2.5-flash',
         apiKey: EnvConfig.geminiApiKey,
       );
+      
+      // Compress/resize the image using dart:ui if it is larger than 200 KB to keep uploads fast
+      if (imageBytes.length > 200 * 1024) {
+        try {
+          final codec = await ui.instantiateImageCodec(
+            imageBytes,
+            targetWidth: 800,
+          );
+          final frame = await codec.getNextFrame();
+          final data = await frame.image.toByteData(format: ui.ImageByteFormat.png);
+          if (data != null) {
+            finalBytes = data.buffer.asUint8List();
+            debugPrint("Compressed captured image from ${imageBytes.length} bytes to ${finalBytes.length} bytes for upload to Gemini");
+          }
+        } catch (e) {
+          debugPrint("Failed to compress image using dart:ui: $e");
+        }
+      }
 
-      final imageBytes = File(imagePath).readAsBytesSync();
+      const visionPrompt = """
+Analisislah gambar ini. Tugas Anda adalah mengenali makanan/minuman dan memperkirakan nutrisi untuk 1 porsinya.
+
+Jika gambar SAMA SEKALI BUKAN makanan (misalnya HANYA berisi wajah manusia, pemandangan, kendaraan, hewan hidup, atau benda mati tanpa ada makanan/minuman), jawab HANYA dengan JSON:
+{"label": "BUKAN_MAKANAN"}
+
+Jika ada makanan/minuman yang bisa dikonsumsi, jawab HANYA dengan format JSON murni berikut (tanpa teks penjelasan atau markdown tambahan):
+{"label": "Nama Makanan", "calories": 250, "protein": 10, "carbs": 30, "fat": 5}
+""";
+
       final prompt = Content.multi([
-        TextPart("Identifikasi makanan pada gambar ini. Berikan HANYA nama makanan dalam Bahasa Indonesia, tanpa penjelasan tambahan. Contoh: Ayam Geprek, Nasi Goreng, Sate Ayam."),
-        DataPart('image/jpeg', imageBytes),
+        TextPart(visionPrompt),
+        DataPart('image/png', finalBytes),
       ]);
 
-      final response = await model.generateContent([prompt]).timeout(const Duration(seconds: 6));
-      final foodName = response.text?.trim() ?? 'Makanan Lokal';
+      final response = await model.generateContent([prompt]).timeout(const Duration(seconds: 25));
+      String rawResult = response.text?.trim() ?? '{"label": "BUKAN_MAKANAN"}';
 
-      debugPrint("Gemini Vision result: $foodName");
+      // Clean up markdown block if present
+      if (rawResult.startsWith('```')) {
+        rawResult = rawResult.replaceAll(RegExp(r'^```\w*\n?'), '').replaceAll(RegExp(r'\n?```$'), '').trim();
+      }
 
-      return [
-        {'label': foodName, 'confidence': 0.85, 'isQuotaExceeded': false},
-      ];
+      debugPrint("Gemini Vision raw result: $rawResult");
+
+      try {
+        final parsed = jsonDecode(rawResult);
+        final label = parsed['label']?.toString() ?? 'BUKAN_MAKANAN';
+
+        // Normalize BUKAN_MAKANAN check
+        final normalizedResult = label.replaceAll(RegExp(r'[^a-zA-Z_]'), '').toUpperCase();
+        if (normalizedResult.contains('BUKAN_MAKANAN') || normalizedResult.contains('BUKANMAKANAN')) {
+          debugPrint("Gemini determined: NOT FOOD");
+          return [{'label': 'BUKAN_MAKANAN', 'confidence': 0.95, 'isQuotaExceeded': false}];
+        }
+
+        return [{
+          'label': label,
+          'confidence': 0.95,
+          'isQuotaExceeded': false,
+          'nutrition': {
+            'calories': (parsed['calories'] ?? 0) as int,
+            'protein': (parsed['protein'] ?? 0) as int,
+            'carbs': (parsed['carbs'] ?? 0) as int,
+            'fat': (parsed['fat'] ?? 0) as int,
+          }
+        }];
+      } catch (e) {
+        // Fallback if parsing fails, assume raw text is the food name
+        final normalizedResult = rawResult.replaceAll(RegExp(r'[^a-zA-Z_]'), '').toUpperCase();
+        if (normalizedResult.contains('BUKAN_MAKANAN') || normalizedResult.contains('BUKANMAKANAN')) {
+          return [{'label': 'BUKAN_MAKANAN', 'confidence': 0.95, 'isQuotaExceeded': false}];
+        }
+        return [{'label': rawResult, 'confidence': 0.95, 'isQuotaExceeded': false}];
+      }
     } catch (e, stackTrace) {
-      debugPrint("Gemini Vision error: $e\n$stackTrace\nFalling back to local default.");
+      debugPrint("Gemini Vision error: $e\n$stackTrace\nFalling back to Groq.");
+      
+      const groqVisionPrompt = """
+Analisislah gambar ini. Tugas Anda mengenali makanan/minuman dan nutrisinya.
+Jika gambar SAMA SEKALI BUKAN makanan, balas HANYA dengan JSON: {"label": "BUKAN_MAKANAN"}
+Jika ada makanan, balas HANYA dengan format JSON murni ini:
+{"label": "Nama Makanan", "calories": 250, "protein": 10, "carbs": 30, "fat": 5}
+""";
+
+      final groqResponse = await GroqService.classifyImage(
+        base64Encode(finalBytes),
+        prompt: groqVisionPrompt,
+      );
+      
+      if (groqResponse != null) {
+        String groqTrimmed = groqResponse.trim();
+        debugPrint("Groq Vision raw result: $groqTrimmed");
+
+        if (groqTrimmed.startsWith('```')) {
+          groqTrimmed = groqTrimmed.replaceAll(RegExp(r'^```\w*\n?'), '').replaceAll(RegExp(r'\n?```$'), '').trim();
+        }
+
+        try {
+          final parsed = jsonDecode(groqTrimmed);
+          final label = parsed['label']?.toString() ?? 'BUKAN_MAKANAN';
+
+          final normalizedGroq = label.replaceAll(RegExp(r'[^a-zA-Z_]'), '').toUpperCase();
+          if (normalizedGroq.contains('BUKAN_MAKANAN') || normalizedGroq.contains('BUKANMAKANAN')) {
+            return [{'label': 'BUKAN_MAKANAN', 'confidence': 0.90, 'isQuotaExceeded': false}];
+          }
+
+          return [{
+            'label': label,
+            'confidence': 0.90,
+            'isQuotaExceeded': false,
+            'nutrition': {
+              'calories': (parsed['calories'] ?? 0) as int,
+              'protein': (parsed['protein'] ?? 0) as int,
+              'carbs': (parsed['carbs'] ?? 0) as int,
+              'fat': (parsed['fat'] ?? 0) as int,
+            }
+          }];
+        } catch (_) {
+           // Fallback to text
+           final normalizedGroq = groqTrimmed.replaceAll(RegExp(r'[^a-zA-Z_]'), '').toUpperCase();
+           if (normalizedGroq.contains('BUKAN_MAKANAN') || normalizedGroq.contains('BUKANMAKANAN')) {
+             return [{'label': 'BUKAN_MAKANAN', 'confidence': 0.90, 'isQuotaExceeded': false}];
+           }
+           return [{'label': groqTrimmed, 'confidence': 0.90, 'isQuotaExceeded': false}];
+        }
+      }
+
+      // Both AI services failed — we do NOT guess. Return BUKAN_MAKANAN.
       lastScanQuotaExceeded = true;
       return [
-        {'label': 'Makanan Lokal', 'confidence': 0.5, 'isQuotaExceeded': true},
+        {'label': 'BUKAN_MAKANAN', 'confidence': 0.0, 'isQuotaExceeded': true},
       ];
     }
   }
 
   Future<Map<String, dynamic>> getNutritionFromGemini(String foodName) async {
-    final cleanName = foodName.toLowerCase().trim();
 
-    // Check if we have an exact match in the local database first to save API quota and provide instant lookup
-    if (_localNutritionDb.containsKey(cleanName)) {
-      debugPrint("Found exact local database match for '$foodName'. Returning instantly.");
-      final localNutri = Map<String, dynamic>.from(_localNutritionDb[cleanName]!);
-      localNutri['isQuotaExceeded'] = false;
-      return localNutri;
-    }
-
-    if (EnvConfig.geminiApiKey.isEmpty || cleanName == 'unknown food' || cleanName == 'makanan lokal') {
-      debugPrint("Using local nutrition lookup for: $foodName");
+    // Bypass local database check if Gemini API Key is available to ensure Gemini is always used to analyze the nutrition
+    if (EnvConfig.geminiApiKey.isEmpty) {
+      debugPrint("Using local nutrition lookup (Gemini API Key missing): $foodName");
       final localNutri = _getNutritionLocally(foodName);
       localNutri['isQuotaExceeded'] = true;
       if (EnvConfig.geminiApiKey.isEmpty) {
@@ -179,7 +287,7 @@ class FoodRecognitionService {
     }
 
     final model = GenerativeModel(
-      model: 'gemini-3.5-flash',
+      model: 'gemini-2.5-flash',
       apiKey: EnvConfig.geminiApiKey,
       systemInstruction: Content.system(
           "Berikan profil nutrisi estimasi untuk 1 porsi makanan ini. Return HANYA dalam format JSON: {\"calories\": int, \"protein\": int, \"carbs\": int, \"fat\": int} tanpa teks markdown tambahan."),
@@ -219,7 +327,32 @@ class FoodRecognitionService {
         };
       }
     } catch (e) {
-      debugPrint("Gemini nutrition error: $e. Falling back to smart local nutrition library.");
+      debugPrint("Gemini nutrition error: $e. Falling back to Groq.");
+      
+      final groqResponse = await GroqService.chat(
+        "Makanan: $foodName",
+        systemInstruction: "Berikan profil nutrisi estimasi untuk 1 porsi makanan ini. Return HANYA dalam format JSON: {\"calories\": int, \"protein\": int, \"carbs\": int, \"fat\": int} tanpa teks markdown tambahan.",
+        jsonMode: true,
+      );
+      
+      if (groqResponse != null) {
+        try {
+          String cleanJson = groqResponse.trim();
+          if (cleanJson.startsWith('```')) {
+            cleanJson = cleanJson.replaceAll(RegExp(r'^```\w*\n?'), '').replaceAll(RegExp(r'\n?```$'), '').trim();
+          }
+          final parsed = jsonDecode(cleanJson);
+          return {
+            'calories': (parsed['calories'] ?? 0) as int,
+            'protein': (parsed['protein'] ?? 0) as int,
+            'carbs': (parsed['carbs'] ?? 0) as int,
+            'fat': (parsed['fat'] ?? 0) as int,
+            'isQuotaExceeded': false,
+          };
+        } catch (_) {}
+      }
+
+      debugPrint("Groq nutrition error or parsing failed. Falling back to smart local nutrition library.");
       lastScanQuotaExceeded = true;
       final localNutri = _getNutritionLocally(foodName);
       localNutri['isQuotaExceeded'] = true;

@@ -5,6 +5,7 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
 import '../../../../shared/widgets/nutrimove_button.dart';
 import '../../../../shared/widgets/nutrimove_text_field.dart';
+import '../../../../shared/widgets/nutrimove_snackbar.dart';
 import '../providers/scanner_provider.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 import '../../../gamification/presentation/providers/gamification_provider.dart';
@@ -52,6 +53,7 @@ class _ManualInputScreenState extends State<ManualInputScreen> {
     return null;
   }
 
+  // Memvalidasi form input manual dan menyimpan data asupan gizi baru ke database lokal
   Future<void> _saveManual() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -77,14 +79,20 @@ class _ManualInputScreenState extends State<ManualInputScreen> {
       await dashboard.loadDashboardData();
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Makanan berhasil disimpan!')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Makanan berhasil disimpan!',
+        type: SnackbarType.success,
+        title: 'Tersimpan',
       );
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan makanan: $e')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Gagal menyimpan makanan: $e',
+        type: SnackbarType.error,
+        title: 'Penyimpanan Gagal',
       );
     } finally {
       if (mounted) {
@@ -100,7 +108,7 @@ class _ManualInputScreenState extends State<ManualInputScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Input Manual', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(

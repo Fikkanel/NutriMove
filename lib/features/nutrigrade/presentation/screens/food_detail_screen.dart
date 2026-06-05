@@ -11,7 +11,7 @@ class FoodDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Detail Makanan', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: Center(child: Text('Food Detail: $foodId', style: AppTypography.headlineSmall)),
       ),
     );

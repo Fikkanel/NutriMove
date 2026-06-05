@@ -11,7 +11,7 @@ import '../../features/nutrigrade/presentation/providers/recommendation_provider
 
 import 'package:provider/single_child_widget.dart';
 
-/// Registers all top-level providers for the application.
+// Pendaftaran semua provider tingkat teratas untuk manajemen state aplikasi.
 class AppProviders {
   AppProviders._();
 

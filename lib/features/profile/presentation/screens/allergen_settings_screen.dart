@@ -56,7 +56,7 @@ class _AllergenSettingsScreenState extends State<AllergenSettingsScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Pengaturan Alergi', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -101,7 +101,7 @@ class _AllergenSettingsScreenState extends State<AllergenSettingsScreen> {
                     backgroundColor: AppColors.surfaceCard,
                     deleteIconColor: AppColors.error,
                     onDeleted: () => _removeAllergen(a),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: AppColors.border)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: BorderSide(color: AppColors.border)),
                   )).toList(),
                 ),
               ],

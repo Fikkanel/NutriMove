@@ -18,6 +18,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  // Lifecycle pertama: memuat data dashboard, streak harian, dan profil pengguna saat halaman dibuka
+  @override
   void initState() {
     super.initState();
     Future.microtask(() {
@@ -30,10 +32,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
+  // Fungsi render tampilan utama dashboard (lingkaran kalori, makronutrisi, list makanan)
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Consumer3<DashboardProvider, GamificationProvider, ProfileProvider>(
             builder: (_, dash, gam, prof, _) {
@@ -42,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   const SizedBox(height: 20),
-                  // Header
+                  // Bagian Header (Halo User & Jumlah Streak)
                   Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                     Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text('Halo, ${prof.displayName.isNotEmpty ? prof.displayName.split(" ")[0] : "User"}! 👋', style: AppTypography.bodyLarge),
@@ -62,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ]),
                   const SizedBox(height: 24),
-                  // Calorie Card
+                  // Kartu Progress Kalori Harian
                   AnimatedCard(
                     delay: 100,
                     child: Column(children: [
@@ -91,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ]),
                       ),
                       const SizedBox(height: 20),
-                      // Macros
+                      // Bagian Ringkasan Protein, Karbohidrat, Lemak
                       Row(children: [
                         _MacroItem(label: 'Protein', value: '${dash.protein.toInt()}g', color: AppColors.secondary, progress: dash.protein / 50),
                         const SizedBox(width: 12),
@@ -102,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ]),
                   ),
                   const SizedBox(height: 16),
-                  // Quick Actions
+                  // Baris Tombol Aksi Cepat (Scan, Chat, Rekomendasi)
                   Row(children: [
                     Expanded(child: _QuickAction(icon: Icons.camera_alt_rounded, label: 'Scan', color: AppColors.primary, onTap: () => context.go('/scan'))),
                     const SizedBox(width: 12),
@@ -111,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(child: _QuickAction(icon: Icons.recommend_rounded, label: 'Rekomendasi', color: AppColors.tertiary, onTap: () => context.push('/recommendations'))),
                   ]),
                   const SizedBox(height: 24),
-                  // Today Meals
+                  // Bagian Daftar Makanan yang Dikonsumsi Hari Ini
                   Text('Makanan Hari Ini', style: AppTypography.titleMedium),
                   const SizedBox(height: 12),
                   ...dash.todayMeals.asMap().entries.map((e) {
@@ -137,10 +141,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       delay: 200 + (e.key * 80),
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       child: Row(children: [
-                        Container(
-                          width: 44, height: 44,
-                          decoration: BoxDecoration(color: _gradeColor(grade).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-                          child: Center(child: Text(grade, style: AppTypography.titleMedium.copyWith(color: _gradeColor(grade)))),
+                        Hero(
+                          tag: 'meal_grade_hero_${e.key}',
+                          flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+                            return Material(
+                              color: Colors.transparent,
+                              child: toHeroContext.widget,
+                            );
+                          },
+                          child: Container(
+                            width: 44, height: 44,
+                            decoration: BoxDecoration(color: _gradeColor(grade).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
+                            child: Center(child: Text(grade, style: AppTypography.titleMedium.copyWith(color: _gradeColor(grade)))),
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -180,6 +193,8 @@ class _MacroItem extends StatelessWidget {
   const _MacroItem({required this.label, required this.value, required this.color, required this.progress});
 
   @override
+  // Fungsi render tampilan utama dashboard (lingkaran kalori, makronutrisi, list makanan)
+  @override
   Widget build(BuildContext context) {
     return Expanded(child: Column(children: [
       Text(value, style: AppTypography.nutriValue.copyWith(color: color)),
@@ -198,6 +213,8 @@ class _QuickAction extends StatelessWidget {
   final VoidCallback onTap;
   const _QuickAction({required this.icon, required this.label, required this.color, required this.onTap});
 
+  @override
+  // Fungsi render tampilan utama dashboard (lingkaran kalori, makronutrisi, list makanan)
   @override
   Widget build(BuildContext context) {
     return GestureDetector(

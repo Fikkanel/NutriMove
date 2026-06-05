@@ -37,23 +37,23 @@ class AppColors {
   static const Color error = Color(0xFFFF3B30);
   static const Color info = Color(0xFF00B0FF);
 
-  // ─── Surface Colors (Light Theme) ───────────────────
-  static const Color background = Color(0xFFFAFAFA); // Off-white
-  static const Color surface = Color(0xFFFFFFFF);    // Pure white
-  static const Color surfaceLight = Color(0xFFF0F0F0); // Very light grey
-  static const Color surfaceCard = Color(0xFFFFFFFF);
-  static const Color surfaceElevated = Color(0xFFF8F9FA);
+  // ─── Surface Colors (Dinamis: Diperbarui via updateTheme) ───────────────────
+  static Color background = const Color(0xFFFAFAFA); // Off-white
+  static Color surface = const Color(0xFFFFFFFF);    // Pure white
+  static Color surfaceLight = const Color(0xFFF0F0F0); // Very light grey
+  static Color surfaceCard = const Color(0xFFFFFFFF);
+  static Color surfaceElevated = const Color(0xFFF8F9FA);
 
-  // ─── Text Colors ────────────────────────────────────
-  static const Color textPrimary = Color(0xFF1E1E1E);   // Near black
-  static const Color textSecondary = Color(0xFF5A5A5A); // Dark grey
-  static const Color textTertiary = Color(0xFF787878);  // Medium grey
-  static const Color textDisabled = Color(0xFFB4B4B4);
+  // ─── Text Colors (Dinamis) ────────────────────────────────────
+  static Color textPrimary = const Color(0xFF1E1E1E);   // Near black
+  static Color textSecondary = const Color(0xFF5A5A5A); // Dark grey
+  static Color textTertiary = const Color(0xFF787878);  // Medium grey
+  static Color textDisabled = const Color(0xFFB4B4B4);
 
-  // ─── Border / Divider ───────────────────────────────
-  static const Color border = Color(0xFFE6E6E6);
-  static const Color borderLight = Color(0xFFF0F0F0);
-  static const Color divider = Color(0xFFDCDCDC);
+  // ─── Border / Divider (Dinamis) ───────────────────────────────
+  static Color border = const Color(0xFFE6E6E6);
+  static Color borderLight = const Color(0xFFF0F0F0);
+  static Color divider = const Color(0xFFDCDCDC);
 
   // ─── Gradients ──────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
@@ -62,13 +62,13 @@ class AppColors {
     end: Alignment.bottomRight,
   );
 
-  static const LinearGradient cardGradient = LinearGradient(
+  static LinearGradient cardGradient = const LinearGradient(
     colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  static const LinearGradient backgroundGradient = LinearGradient(
+  static LinearGradient backgroundGradient = const LinearGradient(
     colors: [Color(0xFFFAFAFA), Color(0xFFF0FAFA)],
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
@@ -85,4 +85,66 @@ class AppColors {
     begin: Alignment.bottomLeft,
     end: Alignment.topRight,
   );
+
+  // ─── Metode Pembaruan Tema Dinamis ───────────────────
+  // Mengubah warna tema aplikasi secara dinamis di runtime berdasarkan deteksi Mode Gelap sistem HP
+  static void updateTheme(bool isDark) {
+    if (isDark) {
+      // Skema Warna Gelap (Dark Mode)
+      background = const Color(0xFF121212);
+      surface = const Color(0xFF1E1E1E);
+      surfaceLight = const Color(0xFF2D2D2D);
+      surfaceCard = const Color(0xFF1E1E1E);
+      surfaceElevated = const Color(0xFF242424);
+
+      textPrimary = const Color(0xFFFFFFFF);
+      textSecondary = const Color(0xFFE0E0E0);
+      textTertiary = const Color(0xFFB0B0B0);
+      textDisabled = const Color(0xFF666666);
+
+      border = const Color(0xFF2D2D2D);
+      borderLight = const Color(0xFF242424);
+      divider = const Color(0xFF2A2A2A);
+
+      cardGradient = const LinearGradient(
+        colors: [Color(0xFF1E1E1E), Color(0xFF242424)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+
+      backgroundGradient = const LinearGradient(
+        colors: [Color(0xFF121212), Color(0xFF1A1F1E)], // Dark green-ish tint background
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      );
+    } else {
+      // Skema Warna Terang (Light Mode)
+      background = const Color(0xFFFAFAFA);
+      surface = const Color(0xFFFFFFFF);
+      surfaceLight = const Color(0xFFF0F0F0);
+      surfaceCard = const Color(0xFFFFFFFF);
+      surfaceElevated = const Color(0xFFF8F9FA);
+
+      textPrimary = const Color(0xFF1E1E1E);
+      textSecondary = const Color(0xFF5A5A5A);
+      textTertiary = const Color(0xFF787878);
+      textDisabled = const Color(0xFFB4B4B4);
+
+      border = const Color(0xFFE6E6E6);
+      borderLight = const Color(0xFFF0F0F0);
+      divider = const Color(0xFFDCDCDC);
+
+      cardGradient = const LinearGradient(
+        colors: [Color(0xFFFFFFFF), Color(0xFFF8F9FA)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+
+      backgroundGradient = const LinearGradient(
+        colors: [Color(0xFFFAFAFA), Color(0xFFF0FAFA)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      );
+    }
+  }
 }

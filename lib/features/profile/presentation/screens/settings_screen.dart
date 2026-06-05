@@ -12,14 +12,13 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notifEnabled = true;
-  bool _darkMode = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Pengaturan', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: ListView(
             padding: const EdgeInsets.all(20),
@@ -33,13 +32,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 activeThumbColor: AppColors.primary,
                 onChanged: (v) => setState(() => _notifEnabled = v),
               ),
-              SwitchListTile(
-                title: Text('Mode Gelap', style: AppTypography.bodyLarge),
-                subtitle: Text('Tema gelap untuk aplikasi', style: AppTypography.bodySmall),
-                value: _darkMode,
-                activeThumbColor: AppColors.primary,
-                onChanged: (v) => setState(() => _darkMode = v),
-              ),
               const SizedBox(height: 32),
               Text('Tentang', style: AppTypography.titleMedium),
               const SizedBox(height: 16),
@@ -49,12 +41,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               ListTile(
                 title: Text('Syarat & Ketentuan', style: AppTypography.bodyLarge),
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
                 onTap: () {},
               ),
               ListTile(
                 title: Text('Kebijakan Privasi', style: AppTypography.bodyLarge),
-                trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
+                trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
                 onTap: () {},
               ),
             ],

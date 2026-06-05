@@ -48,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -64,17 +64,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: 72,
                       height: 72,
                       decoration: BoxDecoration(
-                        gradient: AppColors.primaryGradient,
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
+                            color: AppColors.primary.withValues(alpha: 0.15),
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.restaurant_rounded, size: 36, color: Colors.white),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/images/nutrimove_logo.png',
+                          width: 72,
+                          height: 72,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 40),
@@ -176,12 +183,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
                   Row(
                     children: [
-                      const Expanded(child: Divider(color: AppColors.border)),
+                      Expanded(child: Divider(color: AppColors.border)),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Text('Atau masuk dengan', style: AppTypography.bodySmall),
                       ),
-                      const Expanded(child: Divider(color: AppColors.border)),
+                      Expanded(child: Divider(color: AppColors.border)),
                     ],
                   ),
                   const SizedBox(height: 24),
@@ -191,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                        side: const BorderSide(color: AppColors.border),
+                        side: BorderSide(color: AppColors.border),
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () async {

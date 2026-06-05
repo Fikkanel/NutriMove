@@ -5,10 +5,12 @@ import '../models/nutrition_summary_model.dart';
 import '../../../scanner/data/models/food_item_model.dart';
 import '../../../../core/storage/local_storage_service.dart';
 
-/// Offline SharedPreferences-based implementation of DashboardRepository.
+// Implementasi repositori dashboard offline berbasis SharedPreferences.
 class DashboardRepositoryImpl implements DashboardRepository {
   String _getTodayString() => DateFormat('yyyy-MM-dd').format(DateTime.now());
 
+  @override
+  // Mengambil ringkasan total kalori dan makronutrisi hari ini dari penyimpanan lokal
   @override
   Future<DailyLogModel> getTodayLog(String userId) async {
     final today = _getTodayString();
@@ -30,6 +32,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
+  // Membaca semua daftar makanan yang dikonsumsi hari ini dari penyimpanan lokal
+  @override
   Future<List<Map<String, dynamic>>> getTodayMeals(String userId) async {
     final today = _getTodayString();
     final key = 'dashboard_meals_${userId}_$today';
@@ -41,12 +45,14 @@ class DashboardRepositoryImpl implements DashboardRepository {
   }
 
   @override
+  // Menyimpan makanan baru ke log harian, mengakumulasikan total nutrisi, dan mengupdate streak
+  @override
   Future<void> addMeal(String userId, FoodItemModel meal) async {
     final today = _getTodayString();
     final logKey = 'dashboard_log_${userId}_$today';
     final mealsKey = 'dashboard_meals_${userId}_$today';
 
-    // 1. Update Daily Log totals
+    // 1. Hitung dan perbarui akumulasi total gizi harian
     final currentLog = await getTodayLog(userId);
     final double calories = currentLog.totalCalories + meal.calories;
     final double protein = currentLog.totalProtein + meal.protein;
@@ -61,7 +67,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
       'lastUpdated': DateTime.now().toIso8601String(),
     });
 
-    // 2. Add to meals list
+    // 2. Tambahkan makanan ke dalam daftar log harian
     final meals = await getTodayMeals(userId);
     final mealGrade = meal.grade.isNotEmpty ? meal.grade : 'B';
     if (mealGrade.toUpperCase() == 'A') {
@@ -83,6 +89,8 @@ class DashboardRepositoryImpl implements DashboardRepository {
     await LocalStorageService.setList(mealsKey, meals);
   }
 
+  @override
+  // Memperbarui kandungan nutrisi makanan yang telah dicatat dan menghitung ulang total harian
   @override
   Future<void> updateMeal(String userId, int index, Map<String, dynamic> updatedMeal) async {
     final today = _getTodayString();
@@ -106,16 +114,18 @@ class DashboardRepositoryImpl implements DashboardRepository {
       await LocalStorageService.setInt(key, (current - 1).clamp(0, 999999));
     }
 
-    // Preserve original timestamp
+    // Pertahankan waktu (timestamp) asli makanan
     updatedMeal['timestamp'] = meals[index]['timestamp'];
     meals[index] = updatedMeal;
 
     await LocalStorageService.setList(mealsKey, meals);
 
-    // Recalculate totals from all meals
+    // Hitung ulang total gizi dari semua makanan yang tersisa
     await _recalculateDailyTotals(logKey, meals);
   }
 
+  @override
+  // Menghapus data makanan dari log hari ini dan menghitung ulang total asupan gizi
   @override
   Future<void> deleteMeal(String userId, int index) async {
     final today = _getTodayString();
@@ -136,7 +146,7 @@ class DashboardRepositoryImpl implements DashboardRepository {
     meals.removeAt(index);
     await LocalStorageService.setList(mealsKey, meals);
 
-    // Recalculate totals from remaining meals
+    // Hitung ulang total gizi dari makanan yang tersisa
     await _recalculateDailyTotals(logKey, meals);
   }
 

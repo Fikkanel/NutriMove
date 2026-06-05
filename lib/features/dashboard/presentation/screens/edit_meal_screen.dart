@@ -5,10 +5,11 @@ import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
 import '../../../../shared/widgets/nutrimove_button.dart';
 import '../../../../shared/widgets/nutrimove_text_field.dart';
+import '../../../../shared/widgets/nutrimove_snackbar.dart';
 import '../providers/dashboard_provider.dart';
 import '../../../gamification/presentation/providers/gamification_provider.dart';
 
-/// Screen for editing or deleting an existing meal entry.
+// Halaman untuk mengubah (edit) atau menghapus data makanan harian.
 class EditMealScreen extends StatefulWidget {
   final int mealIndex;
   final Map<String, dynamic> mealData;
@@ -77,6 +78,7 @@ class _EditMealScreenState extends State<EditMealScreen> {
     return 'D';
   }
 
+  // Memvalidasi form edit dan menyimpan perubahan gizi makanan baru ke database lokal
   Future<void> _saveChanges() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -106,20 +108,27 @@ class _EditMealScreenState extends State<EditMealScreen> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Makanan berhasil diperbarui!')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Makanan berhasil diperbarui!',
+        type: SnackbarType.success,
+        title: 'Diperbarui',
       );
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal memperbarui: $e')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Gagal memperbarui: $e',
+        type: SnackbarType.error,
+        title: 'Pembaruan Gagal',
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);
     }
   }
 
+  // Menampilkan dialog konfirmasi hapus dan menghapus makanan dari database lokal jika dikonfirmasi
   Future<void> _deleteMeal() async {
     final confirm = await showDialog<bool>(
       context: context,
@@ -157,14 +166,20 @@ class _EditMealScreenState extends State<EditMealScreen> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Makanan berhasil dihapus!')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Makanan berhasil dihapus!',
+        type: SnackbarType.success,
+        title: 'Dihapus',
       );
       Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menghapus: $e')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Gagal menghapus: $e',
+        type: SnackbarType.error,
+        title: 'Penghapusan Gagal',
       );
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -184,24 +199,33 @@ class _EditMealScreenState extends State<EditMealScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Edit Makanan', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
             key: _formKey,
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              // Grade Preview
+              // Pratinjau Nilai Huruf NutriGrade
               Center(
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: gradeColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: gradeColor.withValues(alpha: 0.4), width: 2),
-                  ),
-                  child: Center(
-                    child: Text(currentGrade, style: AppTypography.displaySmall.copyWith(color: gradeColor)),
+                child: Hero(
+                  tag: 'meal_grade_hero_${widget.mealIndex}',
+                  flightShuttleBuilder: (flightContext, animation, flightDirection, fromHeroContext, toHeroContext) {
+                    return Material(
+                      color: Colors.transparent,
+                      child: toHeroContext.widget,
+                    );
+                  },
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: gradeColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: gradeColor.withValues(alpha: 0.4), width: 2),
+                    ),
+                    child: Center(
+                      child: Text(currentGrade, style: AppTypography.displaySmall.copyWith(color: gradeColor)),
+                    ),
                   ),
                 ),
               ),

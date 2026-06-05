@@ -53,7 +53,7 @@ class _WeeklyReportScreenState extends State<WeeklyReportScreen> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
             : _buildContent(),

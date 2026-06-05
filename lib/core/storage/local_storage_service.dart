@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Local Storage Service for saving application data offline.
+// Layanan penyimpanan lokal persisten menggunakan SharedPreferences (Offline-First Cache)
 class LocalStorageService {
   static SharedPreferences? _prefs;
 
-  /// Initialize SharedPreferences instance.
+  // Inisialisasi instansi SharedPreferences saat startup aplikasi
   static Future<void> init() async {
     if (_prefs != null) return;
     try {
@@ -24,7 +24,7 @@ class LocalStorageService {
     return _prefs!;
   }
 
-  /// Save map to local storage.
+  // Menyimpan data Map ke penyimpanan lokal.
   static Future<void> setMap(String key, Map<String, dynamic> val) async {
     try {
       await prefs.setString(key, jsonEncode(val));
@@ -33,7 +33,7 @@ class LocalStorageService {
     }
   }
 
-  /// Get map from local storage.
+  // Membaca data Map dari memori lokal HP berdasarkan key (JSON decode)
   static Map<String, dynamic>? getMap(String key) {
     try {
       final data = prefs.getString(key);
@@ -45,7 +45,7 @@ class LocalStorageService {
     }
   }
 
-  /// Save list to local storage.
+  // Menyimpan data List ke penyimpanan lokal.
   static Future<void> setList(String key, List<dynamic> val) async {
     try {
       await prefs.setString(key, jsonEncode(val));
@@ -54,7 +54,7 @@ class LocalStorageService {
     }
   }
 
-  /// Get list from local storage.
+  // Membaca data List dari penyimpanan lokal.
   static List<dynamic>? getList(String key) {
     try {
       final data = prefs.getString(key);
@@ -66,7 +66,7 @@ class LocalStorageService {
     }
   }
 
-  /// Save integer to local storage.
+  // Menyimpan data integer ke penyimpanan lokal.
   static Future<void> setInt(String key, int val) async {
     try {
       await prefs.setInt(key, val);
@@ -75,7 +75,7 @@ class LocalStorageService {
     }
   }
 
-  /// Get integer from local storage.
+  // Membaca data integer dari penyimpanan lokal.
   static int? getInt(String key) {
     try {
       return prefs.getInt(key);

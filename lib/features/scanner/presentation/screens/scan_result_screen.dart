@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
 import '../../../../shared/widgets/nutrimove_button.dart';
+import '../../../../shared/widgets/nutrimove_snackbar.dart';
 import '../../presentation/providers/scanner_provider.dart';
 import '../../../dashboard/presentation/providers/dashboard_provider.dart';
 import '../../../gamification/presentation/providers/gamification_provider.dart';
@@ -58,6 +59,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     }
   }
 
+  // Menyimpan makanan hasil identifikasi kamera AI ke dalam log harian di database
   Future<void> _saveMeal() async {
     setState(() {
       _isSaving = true;
@@ -76,14 +78,20 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
 
       if (!mounted) return;
       scanner.reset();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Makanan berhasil disimpan ke log!')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Makanan berhasil disimpan ke log!',
+        type: SnackbarType.success,
+        title: 'Tersimpan',
       );
       context.go('/home');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Gagal menyimpan makanan: $e')),
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Gagal menyimpan makanan: $e',
+        type: SnackbarType.error,
+        title: 'Penyimpanan Gagal',
       );
     } finally {
       if (mounted) {
@@ -103,7 +111,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
       return Scaffold(
         appBar: const CustomAppBar(title: 'Hasil Scan', showBack: true),
         body: Container(
-          decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+          decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
           child: const Center(
             child: Text('Tidak ada data hasil scan.'),
           ),
@@ -117,13 +125,12 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
     final double carbs = (scanResult['carbs'] ?? 0).toDouble();
     final double fat = (scanResult['fat'] ?? 0).toDouble();
     final Color gradeColor = _getGradeColor(grade);
-    final bool isQuotaExceeded = scanResult['isQuotaExceeded'] == true;
     final double portionMultiplier = scannerProvider.portionMultiplier;
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'Hasil Scan', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -135,41 +142,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        if (isQuotaExceeded) ...[
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            decoration: BoxDecoration(
-                              color: Colors.amber.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.amber.withValues(alpha: 0.4)),
-                            ),
-                            child: Row(children: [
-                              const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 24),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Batas Kuota AI Terlampaui',
-                                      style: AppTypography.titleSmall.copyWith(color: Colors.amber),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Menampilkan estimasi nutrisi lokal secara cerdas. Anda dapat menyesuaikannya atau menyimpannya.',
-                                      style: AppTypography.bodySmall.copyWith(
-                                        color: Colors.amber.withValues(alpha: 0.9),
-                                        fontSize: 11,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ]),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
+
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
@@ -212,7 +185,7 @@ class _ScanResultScreenState extends State<ScanResultScreen> {
                                         padding: EdgeInsets.zero,
                                         shrinkWrap: true,
                                         itemCount: options.length,
-                                        separatorBuilder: (context, index) => const Divider(height: 1, color: AppColors.border),
+                                        separatorBuilder: (context, index) => Divider(height: 1, color: AppColors.border),
                                         itemBuilder: (BuildContext context, int index) {
                                           final String option = options.elementAt(index);
                                           return InkWell(

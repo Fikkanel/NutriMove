@@ -6,6 +6,7 @@ import 'app.dart';
 import 'core/providers/app_providers.dart';
 import 'core/storage/local_storage_service.dart';
 
+// Fungsi utama untuk menjalankan aplikasi Flutter
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {

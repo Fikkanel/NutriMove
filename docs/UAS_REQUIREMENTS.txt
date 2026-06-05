@@ -1,0 +1,369 @@
+UAS Pemrograman Mobile
+Mata Kuliah: Pemrograman Mobile (Flutter)
+🎯 Deskripsi
+Mahasiswa diminta untuk mengembangkan aplikasi mobile berbasis Flutter secara end-to-end yang mengimplementasikan fitur utama pengembangan aplikasi modern, meliputi CRUD, database, autentikasi, dan animasi.
+Aplikasi bersifat bebas (open theme), namun wajib memenuhi seluruh kriteria teknis di bawah.
+⚙️ REQUIREMENT UTAMA (WAJIB)
+1. 🔄 CRUD (Create, Read, Update, Delete)
+Aplikasi harus memiliki fitur:
+Create → Menambahkan data
+Read → Menampilkan data (list/detail)
+Update → Mengubah data
+Delete → Menghapus data
+📌 Contoh:
+Todo App
+Catatan keuangan
+Kuis (dengan manajemen soal)
+Aplikasi booking
+2. 🎨 Animation
+Hero Animation
+Progress Indicator Animation
+Lottie / Rive Animation
+Confetti Animation
+Animated List
+FadeTransition
+ScaleTransition
+🧱 STRUKTUR MINIMAL APLIKASI
+Halaman Utama (Dashboard/List Data)
+Halaman Tambah/Edit Data
+Halaman Detail
+Animasi di minimal 2 bagian
+📊 MATRKS PENILAIAN
+Table
+🚀 NILAI TAMBAHAN (BONUS)
+🟢 Level 1 – Enhancement Dasar (+5% per fitur)
+Fitur yang meningkatkan UX tapi masih relatif mudah:
+Dark Mode / Theme Switching
+Form Validation (email, password, dll)
+Empty State UI (tidak hanya blank screen)
+Loading Indicator yang proper
+Error Handling (Snackbar/Dialog)
+Pull to Refresh
+Search & Filter sederhana
+Sorting data
+🟡 Level 2 – Intermediate (+10% per fitur)
+Butuh pemahaman lebih dalam dan integrasi fitur:
+State Management (Provider / Riverpod / BLoC)
+Pagination / Infinite Scroll
+Local Cache (Hive/SQLite) + sync sederhana
+Multi-role user (admin vs user)
+Upload image/file ke Firebase Storage
+Custom reusable widgets/component system
+Form kompleks (multi-step form)
+🔵 Level 3 – Advanced (+15% per fitur)
+Mulai masuk ke level “capstone serius”:
+REST API integration (backend eksternal)
+Push Notification (Firebase Cloud Messaging)
+Offline-first app (data tetap jalan tanpa internet)
+Advanced animation (Rive / complex transition)
+Data visualization (chart/graph)
+Security rules Firebase (bukan default open)
+🔴 Level 4 – Expert (+20% per fitur)
+Level yang biasanya jarang dicapai (nilai A++ kalau rapi):
+Clean Architecture (MVVM / Repository Pattern)
+Dependency Injection
+Automated Testing (unit / widget test)
+AI integration (misalnya rekomendasi, chatbot sederhana)
+Gunakan tema olahraga
+Firebase
+🏆 BONUS KHUSUS (Opsional Tambahan)
+🎥 Demo Profesional (+5%)
+Video demo jelas, narasi rapi
+Menjelaskan flow aplikasi
+Masukkan di youtube
+📦 Deploy & Release (+5%)
+APK / AAB siap install
+Atau publish (internal testing Play Store)
+📘 Dokumentasi Lengkap (+5%)
+ERD / flow diagram
+Penjelasan arsitektur
+Screenshot lengkap
+📦 OUTPUT YANG DIKUMPULKAN
+Source Code (GitHub / ZIP)
+APK / Video Demo (≤ 5 menit)
+README berisi:
+Deskripsi aplikasi
+Fitur
+Teknologi yang digunakan
+Screenshot
+Cara menjalankan
+Table
+Table
+No
+Aspek
+Bobot
+Kriteria
+1
+Fungsionalitas CRUD
+25%
+Semua operasi berjalan sempurna
+2
+Database Integration
+15%
+Firestore/SQLite terhubung dengan baik
+3
+Autentikasi
+15%
+Login/Register berjalan dengan benar
+4
+UI/UX
+10%
+Tampilan menarik, usable
+5
+Animasi
+10%
+Minimal 2 animasi berjalan dengan baik
+6
+Struktur Kode
+10%
+Clean code, modular, OOP
+7
+Kreativitas & Kompleksitas
+10%
+Ide aplikasi & fitur tambahan
+8
+Dokumentasi
+5%
+README + screenshot + penjelasan
+Tema \ No
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+🎓 Edukasi
+Quiz App
+Flashcard App
+Vocabulary Trainer
+Math Solver
+History Timeline
+E-learning Mini
+Exam Prep Tracker
+Coding Quiz
+Language Exchange
+Study Planner
+💰 Keuangan
+Expense Tracker
+Budget Planner
+Savings Goal App
+Bill Reminder
+Investment Tracker
+Split Bill App
+Subscription Tracker
+Debt Manager
+Crypto Tracker
+Financial Diary
+🏃 Kesehatan
+Workout Tracker
+Calorie Counter
+Water Reminder
+Sleep Tracker
+Mental Health Journal
+Yoga Guide
+Step Counter
+Medication Reminder
+Diet Planner
+Habit Health Tracker
+🛒 E-Commerce
+Simple Store
+Product Catalog
+Wishlist App
+Order Tracker
+Marketplace Mini
+Grocery List Shop
+Thrift Shop App
+Book Store
+Food Ordering
+Digital Product Store
+📅 Produktivitas
+Todo List
+Notes App
+Daily Planner
+Pomodoro Timer
+Goal Tracker
+Reminder App
+Calendar Scheduler
+Focus Timer
+Project Manager
+Checklist App
+🎮 Hiburan
+Movie Tracker
+Anime List
+Game Library
+Meme Generator
+Music Playlist App
+Trivia Game
+Story Reader
+Comic Viewer
+Karaoke App
+Fan Theory App
+🌏 Sosial
+Mini Social Feed
+Chat App
+Event Sharing
+Community Forum
+Anonymous Chat
+Hobby Group App
+Polling App
+Story Sharing
+Friend Locator
+Discussion Board
+🚗 Transportasi
+Parking Finder
+Ride Logbook
+Fuel Tracker
+Travel Planner
+Route Tracker
+Car Maintenance
+Ticket Booking
+Bike Rental App
+Trip Journal
+Navigation Notes
+🍔 Lifestyle
+Recipe App
+Food Diary
+Fashion Lookbook
+Travel Bucket List
+Daily Quotes
+Meditation App
+Event Planner
+Hobby Tracker
+Pet Care App
+Home Decor App
+🧠 Teknologi
+API Data Viewer
+IoT Dashboard
+File Manager
+QR Scanner
+Password Manager
+Device Monitor
+Cloud Notes
+Code Snippet App
+AI Chat UI
+Log Analyzer
+Aspek \ No
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+🏋️ Latihan
+Workout Tracker
+Home Workout Guide
+Gym Routine Planner
+Daily Exercise Reminder
+Bodyweight Training App
+HIIT Timer
+Stretching Guide
+Strength Log
+Personal Trainer Lite
+Warm-up Routine
+🏃 Kardio
+Running Tracker
+Cycling Tracker
+Step Counter
+Distance Logger
+Pace Calculator
+Interval Running Timer
+Route Tracker
+Calories Burned Estimator
+Jogging Planner
+Cardio Progress App
+🥗 Nutrisi
+Calorie Counter
+Meal Planner
+Protein Intake Tracker
+Diet Log
+Hydration Reminder
+Macro Calculator
+Food Diary
+Healthy Recipe App
+Weight Gain Planner
+Weight Loss Tracker
+⚽ Olahraga Tim
+Match Scheduler
+Team Roster App
+Score Tracker
+League Table
+Player Stats Tracker
+Lineup Builder
+Match Reminder
+Tournament Manager
+Team Chat App
+Coach Notes
+🧘 Kebugaran
+Yoga Guide
+Meditation Timer
+Flexibility Tracker
+Posture Corrector
+Breathing Exercise App
+Relaxation Timer
+Fitness Challenge App
+Mobility Routine
+Wellness Journal
+Stress Tracker
+📊 Statistik
+Performance Tracker
+Personal Best Log
+Training History
+Progress Chart
+Goal Tracker
+Speed Analysis
+Workout Stats
+Match Analysis
+Fitness Report
+Activity Summary
+🎮 Gamifikasi
+Fitness Points App
+Step Challenge
+Daily Quest Workout
+Achievement Tracker
+Badge Reward System
+Leaderboard App
+Fitness Streak Tracker
+Level Up Fitness
+Competition Tracker
+Reward Unlock App
+🏟️ Event & Komunitas
+Event Finder
+Sports Meetup
+Training Group App
+Local Tournament Info
+Booking Lapangan
+Sparring Partner Finder
+Community Feed
+Event Reminder
+Fan Meetup App
+Volunteer Sports
+🧰 Manajemen
+Equipment Tracker
+Gear Checklist
+Gym Membership Tracker
+Booking Trainer
+Schedule Planner
+Injury Log
+Recovery Tracker
+Session Planner
+Training Calendar
+Sports Budget Tracker
+📚 Edukasi
+Rules of Sports App
+Technique Guide
+Skill Tutorial App
+Referee Guide
+Strategy Board
+Sports Quiz
+Coaching Tips
+Drill Library
+Video Analysis Notes
+Tactics Planner

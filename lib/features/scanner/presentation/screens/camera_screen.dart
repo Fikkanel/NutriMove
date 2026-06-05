@@ -6,27 +6,28 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/nutrimove_button.dart';
+import '../../../../shared/widgets/nutrimove_snackbar.dart';
 import '../providers/scanner_provider.dart';
-
+ 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({super.key});
-
+ 
   @override
   State<CameraScreen> createState() => _CameraScreenState();
 }
-
+ 
 class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
   CameraController? _controller;
   bool _isCameraInitialized = false;
   bool _hasCameraPermission = true;
-
+ 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _initializeCamera();
   }
-
+ 
   Future<void> _initializeCamera() async {
     try {
       final cameras = await availableCameras();
@@ -34,20 +35,20 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
         debugPrint("No cameras found");
         return;
       }
-
+ 
       final backCamera = cameras.firstWhere(
         (camera) => camera.lensDirection == CameraLensDirection.back,
         orElse: () => cameras.first,
       );
-
+ 
       final controller = CameraController(
         backCamera,
         ResolutionPreset.medium,
         enableAudio: false,
       );
-
+ 
       _controller = controller;
-
+ 
       await controller.initialize();
       if (mounted) {
         setState(() {
@@ -63,33 +64,33 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       }
     }
   }
-
+ 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _controller?.dispose();
     super.dispose();
   }
-
+ 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final CameraController? cameraController = _controller;
-
+ 
     if (cameraController == null || !cameraController.value.isInitialized) {
       return;
     }
-
+ 
     if (state == AppLifecycleState.inactive) {
       cameraController.dispose();
     } else if (state == AppLifecycleState.resumed) {
       _initializeCamera();
     }
   }
-
+ 
   Future<void> _captureAndProcess() async {
     if (_controller == null || !_controller!.value.isInitialized) return;
     if (_controller!.value.isTakingPicture) return;
-
+ 
     try {
       final image = await _controller!.takePicture();
       if (mounted) {
@@ -98,8 +99,11 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
         await scanner.processImage(image.path);
         if (mounted) {
           if (scanner.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: ${scanner.errorMessage}')),
+            NutriMoveSnackbar.show(
+              context,
+              message: scanner.errorMessage!,
+              type: SnackbarType.error,
+              title: 'Pemindaian Gagal',
             );
           } else if (scanner.scanResult != null) {
             context.push('/scan/result');
@@ -110,19 +114,27 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       debugPrint("Error capturing picture: $e");
     }
   }
-
+ 
   Future<void> _pickFromGallery() async {
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 80,
+      );
       if (image != null && mounted) {
         final scanner = context.read<ScannerProvider>();
         scanner.startScanning();
         await scanner.processImage(image.path);
         if (mounted) {
           if (scanner.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Error: ${scanner.errorMessage}')),
+            NutriMoveSnackbar.show(
+              context,
+              message: scanner.errorMessage!,
+              type: SnackbarType.error,
+              title: 'Pemindaian Gagal',
             );
           } else if (scanner.scanResult != null) {
             context.push('/scan/result');
@@ -140,7 +152,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Column(children: [
             Padding(

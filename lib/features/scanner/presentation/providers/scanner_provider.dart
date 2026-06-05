@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/food_item_model.dart';
 import '../../data/repositories/scanner_repository_impl.dart';
 
-/// Manages food scanning state.
+// Mengelola state pemindaian foto makanan.
 class ScannerProvider extends ChangeNotifier {
   final _repo = ScannerRepositoryImpl();
   bool _isScanning = false;
@@ -25,6 +25,7 @@ class ScannerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Mengirim gambar hasil jepretan kamera ke Gemini API dan menangani status loading/error
   Future<void> processImage(String imagePath) async {
     _isProcessing = true;
     notifyListeners();
@@ -42,7 +43,7 @@ class ScannerProvider extends ChangeNotifier {
         'isQuotaExceeded': _repo.lastScanQuotaExceeded,
       };
     } catch (e) {
-      _errorMessage = e.toString();
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
     }
 
     _isProcessing = false;
@@ -50,6 +51,7 @@ class ScannerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Menyimpan data makanan yang diidentifikasi oleh AI ke log gizi harian
   Future<void> saveScannedMeal() async {
     if (_scanResult == null) return;
     
@@ -71,10 +73,11 @@ class ScannerProvider extends ChangeNotifier {
     await _repo.saveMealToLog(food);
   }
 
+  // Menyimpan data makanan hasil ketikan manual pengguna ke log gizi harian
   Future<void> saveManualMeal(Map<String, dynamic> data) async {
     final food = await _repo.manualInput(data);
     
-    // Calculate grade dynamically
+    // Hitung grade NutriGrade secara dinamis
     final pro = food.protein;
     final cal = food.calories;
     final fat = food.fat;

@@ -23,7 +23,7 @@ class NutriMoveBottomNavBar extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surface,
-        border: const Border(
+        border: Border(
           top: BorderSide(color: AppColors.border, width: 0.5),
         ),
         boxShadow: [

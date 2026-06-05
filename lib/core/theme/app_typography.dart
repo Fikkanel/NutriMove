@@ -151,4 +151,34 @@ class AppTypography {
     color: AppColors.textPrimary,
     height: 1.3,
   );
+
+  // ─── Metode Pembaruan Tema Dinamis ───────────────────
+  static void updateTheme(bool isDark) {
+    final textColor = isDark ? const Color(0xFFFFFFFF) : const Color(0xFF1E1E1E);
+    final textSecColor = isDark ? const Color(0xFFE0E0E0) : const Color(0xFF5A5A5A);
+    final textTertColor = isDark ? const Color(0xFFB0B0B0) : const Color(0xFF787878);
+
+    displayLarge = displayLarge.copyWith(color: textColor);
+    displayMedium = displayMedium.copyWith(color: textColor);
+    displaySmall = displaySmall.copyWith(color: textColor);
+    
+    headlineLarge = headlineLarge.copyWith(color: textColor);
+    headlineMedium = headlineMedium.copyWith(color: textColor);
+    headlineSmall = headlineSmall.copyWith(color: textColor);
+    
+    titleLarge = titleLarge.copyWith(color: textColor);
+    titleMedium = titleMedium.copyWith(color: textColor);
+    titleSmall = titleSmall.copyWith(color: textColor);
+    
+    bodyLarge = bodyLarge.copyWith(color: textSecColor);
+    bodyMedium = bodyMedium.copyWith(color: textSecColor);
+    bodySmall = bodySmall.copyWith(color: textTertColor);
+    
+    labelLarge = labelLarge.copyWith(color: textColor);
+    labelMedium = labelMedium.copyWith(color: textSecColor);
+    labelSmall = labelSmall.copyWith(color: textTertColor);
+    
+    gradeLabel = gradeLabel.copyWith(color: textColor);
+    nutriValue = nutriValue.copyWith(color: textColor);
+  }
 }

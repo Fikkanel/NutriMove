@@ -21,30 +21,40 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
   late Animation<double> _textOpacity;
   late Animation<Offset> _textSlide;
 
+  // Inisialisasi kontroler animasi logo & teks, mendefinisikan kurva elastis, serta memulai animasi saat masuk splash
   @override
   void initState() {
     super.initState();
+    // Kontroler animasi logo dengan durasi 1.2 detik
     _logoController = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
+    // Kontroler animasi teks dengan durasi 0.8 detik
     _textController = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
 
+    // Efek elastis memantul (elasticOut) untuk logo membesar dari 50% ke 100%
     _logoScale = Tween<double>(begin: 0.5, end: 1.0).animate(
       CurvedAnimation(parent: _logoController, curve: Curves.elasticOut),
     );
+    // Efek memudar transparan ke padat untuk logo
     _logoOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _logoController, curve: const Interval(0, 0.5, curve: Curves.easeIn)),
     );
+    // Efek memudar untuk teks tagline aplikasi
     _textOpacity = Tween<double>(begin: 0, end: 1).animate(
       CurvedAnimation(parent: _textController, curve: Curves.easeIn),
     );
+    // Efek meluncur ke atas (slide transition) untuk teks dari koordinat bawah ke tengah
     _textSlide = Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
       CurvedAnimation(parent: _textController, curve: Curves.easeOut),
     );
 
+    // Menjalankan animasi logo segera saat masuk halaman
     _logoController.forward();
+    // Menjalankan animasi teks dengan jeda 600 milidetik setelah animasi logo dimulai
     Future.delayed(const Duration(milliseconds: 600), () {
       if (mounted) _textController.forward();
     });
 
+    // Memeriksa status login pengguna (Firebase Auth Session)
     _checkAuth();
   }
 
@@ -78,7 +88,7 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -92,17 +102,24 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                     width: 120,
                     height: 120,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.4),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                           blurRadius: 30,
                           offset: const Offset(0, 10),
                         ),
                       ],
                     ),
-                    child: const Icon(Icons.restaurant_rounded, size: 56, color: Colors.white),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(30),
+                      child: Image.asset(
+                        'assets/images/nutrimove_logo.png',
+                        width: 120,
+                        height: 120,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                   ),
                 ),
               ),

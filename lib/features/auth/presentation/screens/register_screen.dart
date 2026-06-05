@@ -43,7 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -81,12 +81,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 32),
                 Row(
                   children: [
-                    const Expanded(child: Divider(color: AppColors.border)),
+                    Expanded(child: Divider(color: AppColors.border)),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Text('Atau daftar dengan', style: AppTypography.bodySmall),
                     ),
-                    const Expanded(child: Divider(color: AppColors.border)),
+                    Expanded(child: Divider(color: AppColors.border)),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -96,7 +96,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      side: const BorderSide(color: AppColors.border),
+                      side: BorderSide(color: AppColors.border),
                       backgroundColor: Colors.white,
                     ),
                     onPressed: () async {

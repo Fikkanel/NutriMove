@@ -13,7 +13,7 @@ class AchievementsScreen extends StatelessWidget {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Achievements', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: Consumer<GamificationProvider>(
           builder: (_, gam, _) => SingleChildScrollView(
             padding: const EdgeInsets.all(20),

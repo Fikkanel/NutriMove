@@ -5,6 +5,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
 import '../../../../shared/widgets/nutrimove_button.dart';
+import '../../../../shared/widgets/nutrimove_snackbar.dart';
 import '../providers/profile_provider.dart';
 
 class DietGoalScreen extends StatefulWidget {
@@ -35,7 +36,12 @@ class _DietGoalScreenState extends State<DietGoalScreen> {
     );
     if (mounted) {
       setState(() => _isSaving = false);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Target Diet diperbarui!'), backgroundColor: AppColors.primary));
+      NutriMoveSnackbar.show(
+        context,
+        message: 'Target Diet berhasil diperbarui!',
+        type: SnackbarType.success,
+        title: 'Tersimpan',
+      );
     }
   }
 
@@ -44,7 +50,7 @@ class _DietGoalScreenState extends State<DietGoalScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Target Diet', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),

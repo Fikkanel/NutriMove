@@ -25,7 +25,18 @@ class ScannerRepositoryImpl implements ScannerRepository {
     String foodName = results.isNotEmpty ? results[0]['label'] : 'Unknown';
     double confidence = results.isNotEmpty ? results[0]['confidence'] : 0.0;
     
-    final nutrition = await _foodRecognition.getNutritionFromGemini(foodName);
+    // Robust non-food detection (case-insensitive, strip punctuation)
+    final normalizedName = foodName.replaceAll(RegExp(r'[^a-zA-Z_]'), '').toUpperCase();
+    if (normalizedName.contains('BUKAN_MAKANAN') || normalizedName.contains('BUKANMAKANAN') || foodName.trim().toUpperCase() == 'BUKAN_MAKANAN') {
+      throw Exception("Objek pada gambar bukan makanan. Silakan foto makanan yang ingin Anda analisis.");
+    }
+    
+    Map<String, dynamic> nutrition;
+    if (results.isNotEmpty && results[0].containsKey('nutrition')) {
+      nutrition = results[0]['nutrition'];
+    } else {
+      nutrition = await _foodRecognition.getNutritionFromGemini(foodName);
+    }
     
     final cal = (nutrition['calories'] ?? 0).toDouble();
     final pro = (nutrition['protein'] ?? 0).toDouble();

@@ -24,7 +24,7 @@ import '../../features/nutrigrade/presentation/screens/recommendation_screen.dar
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
 import '../../shared/widgets/bottom_nav_bar.dart';
 
-/// NutriMove — Application Router (GoRouter)
+// NutriMove — Router Navigasi Utama Aplikasi (GoRouter)
 class AppRouter {
   AppRouter._();
 
@@ -35,7 +35,7 @@ class AppRouter {
     initialLocation: '/splash',
     debugLogDiagnostics: true,
     routes: [
-      // ─── Auth Routes (no bottom nav) ──────────────
+      // ─── Rute Autentikasi (tanpa navigasi bawah) ──────────────
       GoRoute(
         path: '/splash',
         builder: (context, state) => const SplashScreen(),
@@ -61,7 +61,7 @@ class AppRouter {
         builder: (context, state) => const ProfileSetupScreen(),
       ),
 
-      // ─── Main Shell (with bottom nav) ─────────────
+      // ─── Shell Utama (dengan navigasi bawah) ─────────────
       ShellRoute(
         navigatorKey: shellNavigatorKey,
         builder: (context, state, child) => MainShell(child: child),
@@ -99,7 +99,7 @@ class AppRouter {
         ],
       ),
 
-      // ─── Detail Routes (pushed on top) ────────────
+      // ─── Rute Detail (ditumpuk di atas halaman utama) ────────────
       GoRoute(
         path: '/scan/result',
         builder: (context, state) => const ScanResultScreen(),
@@ -154,7 +154,7 @@ class AppRouter {
   }
 }
 
-/// Main shell widget that wraps pages with bottom navigation.
+// Widget shell utama yang membungkus halaman dengan navigasi bawah.
 class MainShell extends StatelessWidget {
   final Widget child;
   const MainShell({super.key, required this.child});

@@ -32,7 +32,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
         child: SafeArea(
           child: Column(children: [
             // Header
@@ -47,7 +47,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 ]),
               ]),
             ),
-            const Divider(height: 1, color: AppColors.border),
+            Divider(height: 1, color: AppColors.border),
             // Messages
             Expanded(
               child: Consumer<NutribotProvider>(
@@ -86,7 +86,7 @@ class _ChatScreenState extends State<ChatScreen> {
             // Input
             Container(
               padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
-              decoration: const BoxDecoration(color: AppColors.surface, border: Border(top: BorderSide(color: AppColors.border))),
+              decoration: BoxDecoration(color: AppColors.surface, border: Border(top: BorderSide(color: AppColors.border))),
               child: SafeArea(
                 top: false,
                 child: Row(children: [

@@ -22,9 +22,12 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       if (mounted) {
         final profile = context.read<ProfileProvider>();
         profile.loadProfile().then((_) {
-          if (mounted) {
+          if (mounted && profile.hasConfiguredAllergens) {
             final goal = profile.dietGoal;
-            context.read<RecommendationProvider>().loadRecommendations(goal);
+            context.read<RecommendationProvider>().loadRecommendations(
+              goal,
+              allergens: profile.allergens,
+            );
           }
         });
       }
@@ -36,16 +39,26 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     return Scaffold(
       appBar: const CustomAppBar(title: 'Rekomendasi Menu', showBack: true),
       body: Container(
-        decoration: const BoxDecoration(gradient: AppColors.backgroundGradient),
-        child: Consumer<RecommendationProvider>(
-          builder: (_, provider, child) {
-            if (provider.isLoading) {
+        decoration: BoxDecoration(gradient: AppColors.backgroundGradient),
+        child: Consumer2<ProfileProvider, RecommendationProvider>(
+          builder: (_, profile, provider, child) {
+            if (profile.isLoading) {
               return const Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              );
+            }
+
+            if (!profile.hasConfiguredAllergens) {
+              return _buildAllergySetupView(context, profile);
+            }
+
+            if (provider.isLoading) {
+              return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    CircularProgressIndicator(color: AppColors.primary),
-                    SizedBox(height: 16),
+                    const CircularProgressIndicator(color: AppColors.primary),
+                    const SizedBox(height: 16),
                     Text('AI sedang menyusun rekomendasi...', style: TextStyle(color: AppColors.textSecondary)),
                   ],
                 ),
@@ -54,7 +67,25 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
             final items = provider.recommendations;
             if (items.isEmpty) {
-              return const Center(child: Text('Gagal memuat rekomendasi', style: TextStyle(color: AppColors.textSecondary)));
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Gagal memuat rekomendasi', style: TextStyle(color: AppColors.textSecondary)),
+                    const SizedBox(height: 12),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        provider.loadRecommendations(profile.dietGoal, allergens: profile.allergens);
+                      },
+                      child: const Text('Coba Lagi'),
+                    ),
+                  ],
+                ),
+              );
             }
 
             return ListView.builder(
@@ -119,9 +150,9 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
     final gradeColor = _getGradeColor(grade);
 
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.surfaceCard,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 32),
       child: Column(
@@ -230,5 +261,252 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       case 'C': return AppColors.gradeC;
       default: return AppColors.gradeD;
     }
+  }
+
+  Widget _buildAllergySetupView(BuildContext context, ProfileProvider profile) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+          Center(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.security_rounded,
+                color: AppColors.primary,
+                size: 64,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Center(
+            child: Text(
+              'Keamanan Diet Anda',
+              style: AppTypography.headlineLarge,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Center(
+            child: Text(
+              'Sebelum AI menyusun rekomendasi menu, mohon konfirmasi apakah Anda memiliki alergi makanan untuk memastikan semua makanan yang disarankan aman untuk Anda.',
+              style: AppTypography.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Text(
+            'Pilih Alergi Makanan Anda (jika ada):',
+            style: AppTypography.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          _AllergySelector(
+            onSave: (selectedAllergens) async {
+              await profile.updateProfile(allergens: selectedAllergens);
+              if (context.mounted) {
+                context.read<RecommendationProvider>().loadRecommendations(
+                  profile.dietGoal,
+                  allergens: selectedAllergens,
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AllergySelector extends StatefulWidget {
+  final Function(List<String>) onSave;
+  const _AllergySelector({required this.onSave});
+
+  @override
+  State<_AllergySelector> createState() => _AllergySelectorState();
+}
+
+class _AllergySelectorState extends State<_AllergySelector> {
+  final List<String> _commonAllergens = [
+    'Kacang',
+    'Seafood',
+    'Susu',
+    'Gandum',
+    'Telur',
+    'Kedelai',
+    'Ikan',
+  ];
+
+  final List<String> _selected = [];
+  final _customCtrl = TextEditingController();
+  bool _showCustomInput = false;
+
+  @override
+  void dispose() {
+    _customCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            ..._commonAllergens.map((allergen) {
+              final isSelected = _selected.contains(allergen);
+              return FilterChip(
+                label: Text(allergen),
+                selected: isSelected,
+                selectedColor: AppColors.primary.withValues(alpha: 0.2),
+                checkmarkColor: AppColors.primary,
+                labelStyle: AppTypography.labelMedium.copyWith(
+                  color: isSelected ? AppColors.primaryDark : AppColors.textSecondary,
+                ),
+                backgroundColor: AppColors.surface,
+                side: BorderSide(
+                  color: isSelected ? AppColors.primary : AppColors.border,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                onSelected: (val) {
+                  setState(() {
+                    if (val) {
+                      _selected.add(allergen);
+                    } else {
+                      _selected.remove(allergen);
+                    }
+                  });
+                },
+              );
+            }),
+            
+            // Selected Custom Allergens
+            ..._selected.where((a) => !_commonAllergens.contains(a)).map((allergen) {
+              return Chip(
+                label: Text(allergen),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
+                deleteIcon: const Icon(Icons.close, size: 16, color: AppColors.error),
+                onDeleted: () {
+                  setState(() {
+                    _selected.remove(allergen);
+                  });
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: AppColors.primary),
+                ),
+              );
+            }),
+          ],
+        ),
+        
+        const SizedBox(height: 16),
+        
+        if (!_showCustomInput)
+          TextButton.icon(
+            icon: const Icon(Icons.add, size: 20),
+            label: const Text('Tambah Alergi Kustom'),
+            onPressed: () {
+              setState(() {
+                _showCustomInput = true;
+              });
+            },
+          )
+        else
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _customCtrl,
+                  decoration: const InputDecoration(
+                    hintText: 'Masukkan alergi (misal: Madu, Wijen)',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(12)),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.surfaceLight,
+                  foregroundColor: AppColors.textPrimary,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                ),
+                onPressed: () {
+                  final txt = _customCtrl.text.trim();
+                  if (txt.isNotEmpty && !_selected.contains(txt)) {
+                    setState(() {
+                      _selected.add(txt);
+                      _customCtrl.clear();
+                      _showCustomInput = false;
+                    });
+                  }
+                },
+                child: const Text('Tambah'),
+              ),
+            ],
+          ),
+          
+        const SizedBox(height: 40),
+        
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  side: BorderSide(color: AppColors.border),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+                onPressed: () => widget.onSave([]),
+                child: Text(
+                  'Tidak Ada Alergi',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                onPressed: () => widget.onSave(_selected),
+                child: const Text(
+                  'Simpan & Lanjutkan',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
   }
 }
