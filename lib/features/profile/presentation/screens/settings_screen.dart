@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/app_typography.dart';
 import '../../../../shared/widgets/custom_app_bar.dart';
@@ -42,12 +43,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ListTile(
                 title: Text('Syarat & Ketentuan', style: AppTypography.bodyLarge),
                 trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                onTap: () {},
+                onTap: () => context.push('/settings/terms-policy?type=terms'),
               ),
               ListTile(
                 title: Text('Kebijakan Privasi', style: AppTypography.bodyLarge),
                 trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textSecondary),
-                onTap: () {},
+                onTap: () => context.push('/settings/terms-policy?type=policy'),
               ),
             ],
           ),

@@ -19,6 +19,7 @@ import '../../features/profile/presentation/screens/edit_profile_screen.dart';
 import '../../features/profile/presentation/screens/allergen_settings_screen.dart';
 import '../../features/profile/presentation/screens/diet_goal_screen.dart';
 import '../../features/profile/presentation/screens/settings_screen.dart';
+import '../../features/profile/presentation/screens/terms_policy_screen.dart';
 import '../../features/nutrigrade/presentation/screens/food_detail_screen.dart';
 import '../../features/nutrigrade/presentation/screens/recommendation_screen.dart';
 import '../../features/gamification/presentation/screens/achievements_screen.dart';
@@ -138,6 +139,13 @@ class AppRouter {
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        path: '/settings/terms-policy',
+        builder: (context, state) {
+          final type = state.uri.queryParameters['type'] ?? 'terms';
+          return TermsPolicyScreen(type: type);
+        },
       ),
       GoRoute(
         path: '/meal/edit',
