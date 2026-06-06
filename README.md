@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart" />
   <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase" />
   <img src="https://img.shields.io/badge/Google%20Gemini-8E75C2?style=for-the-badge&logo=googlegemini&logoColor=white" alt="Gemini AI" />
+  <img src="https://img.shields.io/badge/Groq%20AI-F55D3E?style=for-the-badge&logo=groq&logoColor=white" alt="Groq AI" />
 </p>
 
 ---
@@ -63,6 +64,7 @@ Aplikasi NutriMove dibangun menggunakan ekosistem teknologi modern berikut:
 * **Navigasi**: [GoRouter](https://pub.dev/packages/go_router) — Sistem routing deklaratif untuk navigasi antar halaman.
 * **AI & Machine Learning**: 
   * [Google Generative AI](https://pub.dev/packages/google_generative_ai) — Integrasi model Gemini 3.5 Flash untuk analisis gambar makanan dan asisten chat.
+  * [Groq Cloud API](https://groq.com) — Integrasi model LLaMA 3.3 & LLaMA 3.2 Vision sebagai mesin kecerdasan cadangan (fallback) untuk performa dan reliabilitas tinggi.
 * **Backend & Cloud Database**:
   * [Firebase Core](https://pub.dev/packages/firebase_core) & [Firebase Auth](https://pub.dev/packages/firebase_auth) — Sistem otentikasi pengguna yang aman (Email & Google Sign-In).
   * [Cloud Firestore](https://pub.dev/packages/cloud_firestore) — Database real-time cloud untuk sinkronisasi data log makanan dan profil pengguna.
@@ -143,14 +145,13 @@ Pastikan Anda telah memasang perangkat lunak berikut:
    * Unduh file `GoogleService-Info.plist` (untuk iOS) dan tempatkan di `ios/Runner/`.
    * Aktifkan layanan **Authentication** (Email/Password & Google Sign-In) serta **Cloud Firestore**.
 
-4. **Konfigurasi API Key Gemini:**
+4. **Konfigurasi API Key (Gemini & Groq):**
    * Dapatkan API Key Gemini Anda dari [Google AI Studio](https://aistudio.google.com).
-   * Tambahkan API Key tersebut ke dalam file konfigurasi lingkungan aplikasi Anda di `lib/core/config/env_config.dart` (atau konfigurasikan sesuai petunjuk keamanan environment Anda):
-     ```dart
-     // Contoh pengisian API Key
-     class EnvConfig {
-       static const String geminiApiKey = 'ISI_API_KEY_GEMINI_ANDA_DI_SINI';
-     }
+   * Dapatkan API Key Groq Anda dari [Groq Console](https://console.groq.com).
+   * Tambahkan API Key tersebut ke dalam file `API_KEY` di root project Anda (file ini di-ignore oleh Git untuk keamanan) dengan format sebagai berikut (lihat contoh di [API_KEY.example](file:///c:/FIKKAN/project/Skills/NutriMove/nutrimove/API_KEY.example)):
+     ```env
+     GEMINI_API_KEY=ISI_API_KEY_GEMINI_DI_SINI
+     GROQ_API_KEY=ISI_API_KEY_GROQ_DI_SINI
      ```
 
 5. **Jalankan Aplikasi:**
