@@ -54,4 +54,7 @@ ios/Runner/GoogleService-Info.plist
 *.env
 API_KEY
 
-
+# Documentation
+docs/
+*.md
+*.txt
